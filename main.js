@@ -53,43 +53,51 @@ async function fetchCurrencyPrices() {
 fetchCurrencyPrices();
 setInterval(fetchCurrencyPrices, 86400000); // تحديث يومي
 
+const apiKey = "53f166614b9c61bb51178718fca3a1a5"; // ضع مفتاح API الخاص بك هنا
+const apiUrl = `https://gnews.io/api/v4/search?q=bitcoin&token=${apiKey}&lang=en&max=5&sortby=publishedAt`;
+
 async function fetchBitcoinNews() {
   try {
-    const response = await fetch(
-      "https://newsapi.org/v2/everything?q=bitcoin&apiKey=2c6cef05bbf745399dc1108d9ce06186&pageSize=5&sortBy=publishedAt"
-    );
+    const response = await fetch(apiUrl);
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
     const data = await response.json();
 
     const newsContainer = document.getElementById("newsContainer");
-    newsContainer.innerHTML = ""; // تفريغ المحتوى الحالي
+    newsContainer.innerHTML = ""; // تفريغ المحتوى السابق
 
+    // عرض آخر 5 أخبار
     data.articles.forEach((article) => {
       const newsItem = document.createElement("div");
       newsItem.classList.add("news-item");
 
       newsItem.innerHTML = `
-        <h3 class="news-title">${article.title}</h3>
-        <p class="news-description">${
-          article.description || "لا توجد تفاصيل إضافية متاحة."
-        }</p>
-        <span class="news-timestamp">${new Date(
-          article.publishedAt
-        ).toLocaleString()}</span>
-      `;
+                <h3 class="news-title">${article.title}</h3>
+                <p class="news-description">${
+                  article.description || "No description available."
+                }</p>
+                <a href="${
+                  article.url
+                }" target="_blank" class="news-link">Read more</a>
+                <span class="news-timestamp">${new Date(
+                  article.publishedAt
+                ).toLocaleString()}</span>
+            `;
 
       newsContainer.appendChild(newsItem);
     });
   } catch (error) {
     console.error("Error fetching Bitcoin news:", error);
-    const newsContainer = document.getElementById("newsContainer");
-    newsContainer.innerHTML =
-      "<p style='color: red;'>حدث خطأ أثناء تحميل الأخبار.</p>";
+    document.getElementById("newsContainer").innerHTML =
+      "<p style='color: red;'>Error loading news. Please try again later.</p>";
   }
 }
 
 // تحديث الأخبار كل 24 ساعة
 fetchBitcoinNews();
-setInterval(fetchBitcoinNews, 86400000); // 24 ساعة
+setInterval(fetchBitcoinNews, 24 * 60 * 60 * 1000); // 24 ساعة
+
 
 document.addEventListener("DOMContentLoaded", function () {
   const toggleButtons = document.querySelectorAll(".toggle-article");
